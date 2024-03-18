@@ -1,0 +1,11 @@
+{
+  "Version": 1,
+  "Hash": "/NNNSKOzey71uI3fhm+brpbbBKao0bvdDIwaGgZncvA=",
+  "Source": "dotnet-consumer-service",
+  "BasePath": "_content/dotnet-consumer-service",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": []
+}

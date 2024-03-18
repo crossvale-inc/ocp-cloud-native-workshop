@@ -1,0 +1,193 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <title>XV OCP Cloud Native Workshop</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/wingcss/0.1.8/wing.min.css"/>
+    <style>
+        input[type=number] {
+            width: 100%;
+            padding: 12px 20px;
+            margin: 8px 0;
+            display: inline-block;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            -webkit-transition: .5s;
+            transition: .5s;
+            outline: 0;
+            font-family: 'Open Sans', serif;
+        }
+    </style>
+    <!-- Load AngularJS -->
+    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.min.js"></script>
+    <script type="text/javascript">
+      var app = angular.module("OrderManagement", []);
+
+      //Controller Part
+      app.controller("OrderManagementController", function ($scope, $http) {
+
+        //Initialize page with default data which is blank in this example
+        $scope.orders = [];
+
+        $scope.form = {
+          id: -1,
+          name: ""
+        };
+
+        //Now load the data from server
+        _refreshPageData();
+
+        //HTTP POST/PUT methods for add/edit orders
+        $scope.update = function () {
+          var method = "";
+          var url = "";
+          var data = {};
+          if ($scope.form.id == -1) {
+            //Id is absent so add orders - POST operation
+            method = "POST";
+            url = '/entity/orders';
+            data.name = $scope.form.name;
+          } else {
+            //If Id is present, it's edit operation - PUT operation
+            method = "PUT";
+            url = '/entity/orders/' + $scope.form.id;
+            data.name = $scope.form.name;
+          }
+
+          $http({
+            method: method,
+            url: url,
+            data: angular.toJson(data),
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          }).then(_success, _error);
+        };
+
+        //HTTP DELETE- delete order by id
+        $scope.remove = function (order) {
+          $http({
+            method: 'DELETE',
+            url: '/entity/orders/' + order.id
+          }).then(_success, _error);
+        };
+
+        //In case of edit orders, populate form with order data
+        $scope.price = function (order) {
+          //$scope.form.name = order.name;
+          //$scope.form.id = order.id;
+
+          $http({
+            method: 'GET',
+            url: '/entity/prices?orderId=' + order.id
+          }).then(function successCallback(response) {
+                    
+              var sum = 0;
+
+              response.data.forEach(obtainedPrice => {
+                sum += Number(obtainedPrice.price);
+              });
+
+              order.calculatedPrice = sum / (response.data.length);
+
+          }, function errorCallback(response) {
+            console.log(response.statusText);
+          });
+        };
+
+          /* Private Methods */
+        //HTTP GET- get all orders collection
+        function _refreshPageData() {
+          
+          $http({
+            method: 'GET',
+            url: '/entity/orders'
+          }).then(function successCallback(response) {
+
+            response.data.forEach(order => {
+
+                $http({
+                  method: 'GET',
+                  url: '/entity/prices?orderId=' + order.id
+                }).then(function successCallback(response) {
+                    
+                    var sum = 0;
+
+                    response.data.forEach(obtainedPrice => {
+                        sum += Number(obtainedPrice.price);
+                    });
+
+                    order.calculatedPrice = sum / (response.data.length);
+
+                }, function errorCallback(response) {
+                  console.log(response.statusText);
+                });
+            })
+
+
+            $scope.orders = response.data;
+
+
+          }, function errorCallback(response) {
+            console.log(response.statusText);
+          });
+        }
+
+        function _success(response) {
+          _refreshPageData();
+          _clearForm()
+        }
+
+        function _error(response) {
+          alert(response.data.message || response.statusText);
+        }
+
+        //Clear the form
+        function _clearForm() {
+          $scope.form.name = "";
+          $scope.form.id = -1;
+        }
+      });
+    </script>
+</head>
+<body ng-app="OrderManagement" ng-controller="OrderManagementController">
+
+<div class="container">
+    <h1>XV OCP Cloud Native Workshops</h1>
+    <p>This application demonstrates how a Quarkus application implements a CRUD endpoint to manage orders using Hibernate ORM with Panache.
+      Order is placed on a kafka topic and a separete service calcualtes its price and inserts it in the prices database.
+    </p>
+    <p>Behind the scenes, we have:
+        <ul>
+            <li>Hibernate ORM with Panache taking care of all CRUD operations</li>
+            <li>RESTEasy powering the REST API</li>
+            <li>Kafka Emitter to publish events</li>
+            <li>Kafka consumer to calculate order price</li>
+            <li>Price service to manage order pricing data</li>
+        </ul>
+    </p>
+
+    <h3>Place Order</h3>
+    <form ng-submit="update()">
+        <div class="row">
+            <div class="col-6"><input type="text" placeholder="Name" ng-model="form.name" size="60"/></div>
+        </div>
+        <input type="submit" value="Save"/>
+    </form>
+
+    <h3>Order List</h3>
+    <div class="row">
+        <div class="col-2">Name</div>
+        <div class="col-2">Average Price</div>
+    </div>
+    <div class="row" ng-repeat="order in orders">
+        <div class="col-2">{{ order.name }}</div>
+        <div class="col-2">{{ order.calculatedPrice }}</div>
+        <div class="col-8"><a ng-click="price( order )" class="btn">Calculate Price</a> <a ng-click="remove( order )" class="btn">Remove</a>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
