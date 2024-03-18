@@ -152,7 +152,7 @@ This will provide a `Deployment` and a `Service` for the `order-service`.
 Make sure the deployment is blue and that the service is running by executing a curl:
 
 ```
-curl http://localhost:8080/entity/orders
+curl http://order-service:8080/entity/orders
 ```
 
 ## Lab 1.2 Deploy UI
