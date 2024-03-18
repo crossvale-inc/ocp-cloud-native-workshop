@@ -356,7 +356,7 @@ If you want only to check the number of events published:
 bin/kafka-run-class.sh kafka.tools.GetOffsetShell   --broker-list localhost:9092 --topic order-placed | awk -F  ":" '{sum += $3} END {print "Result: "sum}'
 ```
 
-## Lab 3 KNative Price Calculation
+## Lab 3 Knative Price Service
 
 To explore the capabilities of the Knative Serving framework, it is possible to configure the `price-service` as a Knative Serving component. This will scale back to 0 the number of pods of the price service if there is no requests sent to the service.
 
@@ -395,3 +395,77 @@ oc start-build dotnet-consumer-service --from-dir=. --follow
 ```
 
 And evalute how the price service is only scaled up when a price is sent from the Kafka consumer.
+
+For serverless or event driven architectures, Quarkus Native images should be considered since that start time is less and the memory footprint is also reduced. This is very important if we consider the service density that may exist in a microservice architecture.
+
+To do a native quarkus build, create a new build configuration for the native image source:
+
+
+```
+oc new-build --name native-price-service --binary=true
+```
+
+Make sure that the dockerfile path is set to the correct `Dockerfile.native`:
+
+```
+strategy:
+  type: Docker
+  dockerStrategy:
+    dockerfilePath: src/main/docker/Dockerfile.native
+```
+
+Clean previous maven builds:
+
+```
+mvn clean
+```
+
+And start the build process for `native-price-service` using the same codebase as with `price-service`:
+
+```
+oc start-build native-price-service --from-dir=. --follow
+```
+
+Mind that although native images are better in the runtime, the build process can take a lot of memory, this application can take up to 6GB of memory to be built. 
+
+Before deploying the native image, evalute the performance of the current knative service while it is scaled down to zero pods:
+
+```
+sh-4.4$ time curl http://price-service-kn.q049twfyy29zifjpdmfzle9vpvzlbmrvcibby2nvdw50cyxpvt1pucb-hpm2j5.svc.cluster.local/entity/prices?orderId=1
+[{"id":1,"orderId":1,"calculatedBy":"Marcos.Rivas","price":0.48}]
+real    0m11.578s
+user    0m0.006s
+sys     0m0.003s
+``` 
+
+Also check memory consumption on the metrics tab on the pod (it can be around 250MB).
+
+Change the Knative service to pull the `native-price-service` image instead of the `price-service` image by editing the YAML in the OCP console to (make sure your image URL is correct):
+
+```
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: price-service-kn
+  labels:
+    networking.knative.dev/visibility: cluster-local
+spec:
+  template:
+    spec:
+      containers:
+      - image: image-registry.openshift-image-registry.svc:5000/workshop/native-price-service
+        ports:
+        - containerPort: 8080
+```
+
+Evalute the performance of the service now:
+
+```
+sh-4.4$ time curl http://price-service-kn.q049twfyy29zifjpdmfzle9vpvzlbmrvcibby2nvdw50cyxpvt1pucb-hpm2j5.svc.cluster.local/entity/prices?orderId=1
+[{"id":1,"orderId":1,"calculatedBy":"Marcos.Rivas","price":0.48}]
+real    0m1.107s
+user    0m0.005s
+sys     0m0.005s
+```
+
+And the memory consumption of the container which should be around 50MB.
