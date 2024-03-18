@@ -177,10 +177,22 @@ Create a new application from the created image:
 oc new-app --name=ui-service --image-stream=ui-service:latest
 ```
 
-Expose the application to consumers outside the cluster:
+Expose the application to consumers outside the cluster, to do that, create route resource with a unique `hostname` (replace `<userid>`)
 
 ```
-oc expose svc ui-service
+kind: Route
+apiVersion: route.openshift.io/v1
+metadata:
+  name: ui-service
+spec:
+  host: ui-service-<userid>.apps.oscadetest.bank.ad.bxs.com
+  to:
+    kind: Service
+    name: ui-service
+    weight: 100
+  port:
+    targetPort: 8080-tcp
+  wildcardPolicy: None
 ```
 
 A route should be created, to check its hostname run:
@@ -194,6 +206,8 @@ Validate that it is possible to access the application:
 ```
 http://<my-route>/index.htlm
 ```
+
+Now orders can be placed from the UI to the `order-service` which will insert data into the ephemeral orders database.
 
 
 ## Lab 1.3 Deploy Price Service
@@ -262,7 +276,7 @@ This will provide a `Deployment` and a `Service` for the `price-service`.
 Make sure the deployment is blue and that the service is running by executing a curl:
 
 ```
-curl http://localhost:8080/entity/prices
+curl http://price-service:8080/entity/prices
 ```
 
 ## Lab 2 Configure Kafka Event to Calculate a Price
@@ -275,7 +289,7 @@ Before deploying, make sure the the kafka configuration in the file `application
 
 ```
   "KafkaConfiguration": {
-    "Brokers": "kafka-cluster-kafka-bootstrap:9092",
+    "Brokers": "kafka-cluster-kafka-bootstrap.workshop.svc.cluster.local:9092",
     "Topic": "order-placed",
     "ConsumerGroup": "workshop_consumer_group"
   }
@@ -299,6 +313,20 @@ If the build is successful, deploy the application:
 
 ```
 oc new-app --name=dotnet-consumer-service --image-stream=dotnet-consumer-service:latest
+```
+
+Un comment the price proxy pass in the nginx configuration to allow prices to be shownin the web UI:
+
+```
+#location ~ ^/entity/prices {
+#  proxy_pass http://price-service:8080;
+#}
+```
+
+And re run the ui service build:
+
+```
+oc start-build ui-service --from-dir=. --follow
 ```
 
 To publish and Event on order placed, uncomment the following line in the order service:
