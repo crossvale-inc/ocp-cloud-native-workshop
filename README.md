@@ -2,8 +2,6 @@
 
 Useful links:
 
-* DevSpaces
-** https://devspaces.apps.oscadetest.bank.ad.bxs.com
 * Openshift Documentaion
 ** https://access.redhat.com/documentation/en-us/openshift_container_platform/4.14
 * Kubernetes documentation
@@ -185,7 +183,7 @@ apiVersion: route.openshift.io/v1
 metadata:
   name: ui-service
 spec:
-  host: ui-service-<userid>.apps.oscadetest.bank.ad.bxs.com
+  host: ui-service-<userid>.<cluster-suffix>
   to:
     kind: Service
     name: ui-service
