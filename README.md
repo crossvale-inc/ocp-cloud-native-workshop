@@ -1,3 +1,96 @@
+<style>
+  
+  input[type=text], select, textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    resize: vertical;
+  }
+
+  input[type=button] {
+    background-color: #F50000;
+    color: white;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    
+  }
+
+  input[type=button]:hover {
+    background-color: #751515;
+  }
+  
+  .header {
+    padding: 10px 16px;
+    background: #ffffff;
+  }
+
+  .markdown-body .headerlink {
+    color: #751515;
+  }
+
+  .sticky {
+    position: fixed;
+    top: 0;
+    width: 100%;
+  }
+
+  .mr-2 {
+    margin-right: var(--base-size-8, 8px) !important;
+  }
+
+  .octicon {
+    display: inline-block;
+    overflow: visible !important;
+    vertical-align: text-bottom;
+    fill: currentColor;
+  }
+
+  .markdown-alert {
+    padding-left: 16px;
+    margin-bottom: 16px;
+    color: inherit;
+  }
+
+  .markdown-alert-title {
+    display: flex;
+    font-weight: var(--base-text-weight-medium, 500);
+    align-items: center;
+    line-height: 1;
+  }
+
+  .markdown-alert-note {
+    border-left: .25em solid #1f6feb;
+    border-left-color: #1f6feb;
+    color: #1f6feb;
+  }
+
+  .markdown-alert-caution {
+    border-left: .25em solid #da3633;
+    border-left-color: #da3633;
+    color: #da3633;
+  }
+
+  .markdown-alert-important {
+    border-left: .25em solid #8957e5;
+    border-left-color: #8957e5;
+    color: #8957e5;
+  }
+
+
+</style>
+<script>
+
+</script>
+
+<div class="header" id="xvHeader">
+<a href="https://crossvale.com">
+      <img width="234" height="45" src="https://crossvale.com/wp-content/uploads/2023/09/crossvale-main-logo_300px.png" class="attachment-medium_large size-medium_large wp-image-19157 entered lazyloaded" alt="" data-lazy-src="https://crossvale.com/wp-content/uploads/2023/09/crossvale-main-logo_300px.png" data-ll-status="loaded"><noscript><img width="234" height="45" src="https://crossvale.com/wp-content/uploads/2023/09/crossvale-main-logo_300px.png" class="attachment-medium_large size-medium_large wp-image-19157" alt="" /></noscript></a>
+</div>
+
+
 # XV Cloud Native Workshop
 
 Useful links:
